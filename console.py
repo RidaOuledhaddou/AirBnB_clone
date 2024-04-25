@@ -139,7 +139,7 @@ Usage2: all <class name>\n"""
 
     def do_update(self, arg):
         """Updates an instance by adding or updating attribute
-Usage: update <class name> <id> <attribute name> \"<attribute value>\"\n"""
+Usage: update <class name> <id> <attribute name>  \"<attribute value>\"\n"""
         if self.valid(arg, True, True):
             args = arg.split()
             _key = args[0]+"."+args[1]
