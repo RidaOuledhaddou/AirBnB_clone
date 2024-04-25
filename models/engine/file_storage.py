@@ -1,42 +1,64 @@
 #!/usr/bin/python3
+""" Doc Here """
 import json
+import os
 from models.base_model import BaseModel
 from models.user import User
-from models.city import City
 from models.place import Place
-from models.review import Review
-from models.amenity import Amenity
 from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
+# from models.base_model import BaseModel #avoid circular
 
 
 class FileStorage:
+    """ doc doc """
+
     __file_path = "file.json"
     __objects = {}
 
     def all(self):
-        """This method returns all objects"""
+        """ doc doc """
         return FileStorage.__objects
 
-    def new(self, arg):
-        """This method new sets a key for dictionary of the objects"""
-        objet = arg.__class__.__name__
-        FileStorage.__objects["{}.{}".format(objet, arg.id)] = arg
+    def new(self, obj):
+        """ doc doc """
+        id = obj.to_dict()["id"]
+        className = obj.to_dict()["__class__"]
+        keyName = className+"."+id
+        FileStorage.__objects[keyName] = obj
 
     def save(self):
-        """The method save new objects as str in json file"""
-        serialization = {}
-        for k, v in FileStorage.__objects.items():
-            serialization[k] = v.to_dict()
-        with open(FileStorage.__file_path, "w") as file:
-            file.write(json.dumps(serialization))
+        """ doc doc """
+        filepath = FileStorage.__file_path
+        data = dict(FileStorage.__objects)
+        for key, value in data.items():
+            data[key] = value.to_dict()
+        with open(filepath, 'w') as f:
+            json.dump(data, f)
+
     def reload(self):
-        """This method reload the dictionary from file"""
-        try:
-            with open(FileStorage.__file_path) as file:
-                dictionnaire = json.load(file)
-                for o in dictionnaire.values():
-                    classe = o["__class__"]
-                    del o["__class__"]
-                    self.new(eval(classe)(**o))
-        except FileNotFoundError:
-            return
+        """ doc doc """
+        filepath = FileStorage.__file_path
+        data = FileStorage.__objects
+        if os.path.exists(filepath):
+            try:
+                with open(filepath) as f:
+                    for key, value in json.load(f).items():
+                        if "BaseModel" in key:
+                            data[key] = BaseModel(**value)
+                        if "User" in key:
+                            data[key] = User(**value)
+                        if "Place" in key:
+                            data[key] = Place(**value)
+                        if "State" in key:
+                            data[key] = State(**value)
+                        if "City" in key:
+                            data[key] = City(**value)
+                        if "Amenity" in key:
+                            data[key] = Amenity(**value)
+                        if "Review" in key:
+                            data[key] = Review(**value)
+            except Exception:
+                pass
